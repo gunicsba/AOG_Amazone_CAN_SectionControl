@@ -1,0 +1,50 @@
+name: Release AOG-Amazone-PCAN
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: pcan_bridge
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt pyinstaller
+
+    - name: Build AOG-Amazone-PCAN.exe
+      run: |
+        pyinstaller --onefile --console --name "AOG-Amazone-PCAN" --icon=icon.ico `
+          --collect-submodules can.interfaces.pcan --copy-metadata python-can `
+          AOG_Amazone_PCAN_bridge.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AOG-Amazone-PCAN
+        path: pcan_bridge/dist/AOG-Amazone-PCAN.exe
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: pcan_bridge/dist/AOG-Amazone-PCAN.exe
+        generate_release_notes: true

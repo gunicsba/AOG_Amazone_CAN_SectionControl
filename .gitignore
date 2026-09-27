@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+build/
+dist/
+*.spec
+*.exe
+*.log
+pcan_bridge/config.ini
